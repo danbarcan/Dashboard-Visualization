@@ -42,19 +42,23 @@ $(function() {
         }, 1000);
     };
     
+	getData();
     // nu faci call la getCitties.. unde ai nevoie de obiectul ala?
     // intrun nou obiect :))) asta voiai sa obtii? da.
     
     
     function getCoords(name){
         $.get("http://maps.googleapis.com/maps/api/geocode/json?address="+name+"&sensor=false", function(data){
-            //if the same coordinates occur, increase count
-            var coords = data.results[0].geometry.location.lat + ', ' + data.results[0].geometry.location.lng
-            if (coords in CityList){
-                CityList[coords] += 1;
-            } else {
-                CityList[coords] = 1;
-            }
+			//console.log(data)
+			if (data.results) {
+				//if the same coordinates occur, increase count
+				var coords = data.results[0].geometry.location.lat + ', ' + data.results[0].geometry.location.lng
+				if (coords in CityList){
+					CityList[coords] += 1;
+				} else {
+					CityList[coords] = 1;
+				}
+			}
             object = createDataForHeatMap(CityList)
         })
     }
@@ -75,11 +79,39 @@ $(function() {
             object = createDataForHeatMap(citylist);
         };
     function myMap() {
-        var mapProp= {
+		
+		setTimeout(function() {
+            console.log(object);
+			var map = new google.maps.Map(document.getElementById('map'), {
+			  zoom: 5,
+			  center: {lat: 51.508742, lng: -0.120850}
+			});
+
+			// Construct the circle for each value in citymap.
+			// Note: We scale the area of the circle based on the population.
+			for (var i in object) {
+				var city = object[i]
+				console.log(city.lat + " " + city.lng + " " + city.count)
+				// Add the circle for this city to the map.
+				var cityCircle = new google.maps.Circle({
+					strokeColor: '#FF0000',
+					strokeOpacity: 0.8,
+					strokeWeight: 2,
+					fillColor: '#FF0000',
+					fillOpacity: 0.35,
+					map: map,
+					center: new google.maps.LatLng(city.lat, city.lng),
+					radius: Math.sqrt(city.count) * 10000
+				});
+			}
+        }, 1000);
+		
+		
+        /*var mapProp= {
             
             center:new google.maps.LatLng(51.508742,-0.120850),
             zoom:5,
-    };
+		};
         var map=new google.maps.Map(document.getElementById("map"),mapProp);
         var city = new google.maps.LatLng(52.395715,4.888916);
         var myCity = new google.maps.Circle({
@@ -91,9 +123,10 @@ $(function() {
             fillColor: "#00ff00",
             fillOpacity: 0.4
           });
-        myCity.setMap(map);
+        myCity.setMap(map);*/
     }
-    myMap();
+	setTimeout(myMap(), 2000);
+    //myMap();
 //    // Heatmap
 //    // don't forget to add gmaps-heatmap.js
 //    var myLatlng = new google.maps.LatLng(53.508742,-1.120850);
